@@ -1,0 +1,19 @@
+{
+    "name": "newtech/ssoauth",
+    "description": "This is an authentication system hook for the Single Sign On system.",
+    "homepage": "https://github.com/newtechautomotiveservices/SSOAuthPackage",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrew Gosselin",
+            "email": "andrew.gosselin@ntautoservices.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-0": {
+            "Newtech\\SSOAuth\\": "src/"
+        }
+    }
+}
