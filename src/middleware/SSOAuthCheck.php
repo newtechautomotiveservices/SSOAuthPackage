@@ -21,16 +21,15 @@ class SSOAuthCheck
 
         if($request->session()->has('user_id') && $request->session()->has('user_token')) {
             $user = User::user();
-            $verify = $user->verify();
-            if($verify == "true") {
+            if($user->verify() == "true") {
                 return $next($request);
             } else {
                 $request->session()->flush();
-                return redirect(config('cssoauth.main.login_route'));
+                return redirect('/login');
             }
         } else {
             $request->session()->flush();
-            return redirect(config('cssoauth.main.login_route'));
+            return redirect('/login');
         }
 
 

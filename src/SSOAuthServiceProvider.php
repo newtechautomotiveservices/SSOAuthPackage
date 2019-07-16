@@ -14,7 +14,7 @@ class SSOAuthServiceProvider extends ServiceProvider
     public function register()
     {
         // register our controller
-        $this->app->make('Newtech\SSOAuth\CRMAuthenticationController');
+        $this->app->make('Newtech\SSOAuth\SSOAuthController');
         $this->loadViewsFrom(__DIR__.'/views', 'ssoauth');
         $this->publishes([
             __DIR__ . '/config' => config_path('ssoauth')

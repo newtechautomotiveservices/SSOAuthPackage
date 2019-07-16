@@ -1,7 +1,7 @@
 <?php
 
 Route::group(['middleware' => ['web']], function () {
-	Route::get(config('crm_authentication.main.login_route'), 'AJG\CRM_Authentication\CRMAuthenticationController@indexLogin');
-	Route::post('/a' . config('crm_authentication.main.login_route'), 'AJG\CRM_Authentication\CRMAuthenticationController@postLogin');
-	Route::get(config('crm_authentication.main.logout_route'), 'AJG\CRM_Authentication\CRMAuthenticationController@indexLogout');
+	Route::get(config('ssoauth.main.login_route'), 'Newtech\SSOAuth\SSOAuthController@indexLogin');
+	Route::post('/a' . config('ssoauth.main.login_route'), 'Newtech\SSOAuth\SSOAuthController@postLogin');
+	Route::get(config('ssoauth.main.logout_route'), 'Newtech\SSOAuth\SSOAuthController@indexLogout');
 });

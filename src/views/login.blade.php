@@ -34,8 +34,8 @@
                     <div class="card-body">
                           <div class="form">
                             <div class="form-group">
-                                <label>Username</label>
-                                <input type="text" class="form-control form-control-lg rounded-0" id="usernameInput" required="">
+                                <label>Email</label>
+                                <input type="text" class="form-control form-control-lg rounded-0" id="emailInput" required="">
                                 <small class="error" id="usernameError" style="display:none;">Oops, you missed this one.</small>
                             </div>
                             <div class="form-group">
@@ -43,7 +43,7 @@
                                 <input type="password" class="form-control form-control-lg rounded-0" id="passwordInput" required="" autocomplete="new-password">
                                 <small class="error" id="passwordError" style="display:none;">Enter your password too!</small>
                             </div>
-                            <small class="error" id="invalidError" style="display:none;">Incorrect username or password!</small>
+                            <small class="error" id="invalidError" style="display:none;">Incorrect email or password!</small>
                             <button type="submit" onclick="authenticate()" class="btn btn-success btn-lg float-right" id="btnLogin">Login</button>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
 
             $( document ).ready(function() {
                               // Get the input field
-              var input1 = $("#usernameInput")[0];
+              var input1 = $("#emailInput")[0];
               var input2 = $("#passwordInput")[0];
 
               // Execute a function when the user releases a key on the keyboard
@@ -91,7 +91,7 @@
 
 
             function authenticate () {
-                let username = $('#usernameInput')[0].value;
+                let email = $('#emailInput')[0].value;
                 let password = $('#passwordInput')[0].value;
 
                 let usernameError = $('#usernameError')[0];
@@ -102,7 +102,7 @@
                 passwordError.style.display = "none";
                 invalidError.style.display = "none";
 
-                if (username == "") {
+                if (email == "") {
                     usernameError.style.display = "block";
                 } else {
                   if (password == "") {
@@ -114,17 +114,18 @@
                          }
                      });
                       jQuery.ajax({
-                         url: "{{'/a' . config('crm_authentication.main.login_route')}}",
+                         url: "{{'/a' . config('ssoauth.main.login_route')}}",
                          method: 'post',
                          headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                          data: {
                             "_token": "{{ csrf_token() }}",
-                            username: username,
+                            email: email,
                             password: password
                          },
                          success: function(result){
-                             if (result == 'true') {
-                                 window.location = "{!! config('crm_authentication.main.home_route') !!}"
+                          console.log(result);
+                             if (result) {
+                                 window.location = "{!! config('ssoauth.main.home_route') !!}"
                              } else {
                                  invalidError.style.display = "block";
                              }

@@ -10,7 +10,7 @@ use Newtech\SSOAuth\Models\User;
 class SSOAuthController extends Controller
 {
     public function indexLogin() {
-
+        // dd(session()->all());
         if(session()->has('user_id') && session()->has('user_token')) {
             return redirect('/');
         } else {
@@ -20,12 +20,13 @@ class SSOAuthController extends Controller
     }
 
     public function postLogin(Request $request) {
-        $authenticated = User::authenticate($request['username'], $request['password']);
-        if(is_array($authenticated)) {
+        $authenticated = User::authenticate($request['email'], $request['password']);
+        if($authenticated["status"] == "success") {
             $checkUser = User::updateUser($authenticated);
             if(is_array($checkUser)) {
                 $request->session()->put('user_id', $checkUser['user_id']);
                 $request->session()->put('user_token',$checkUser['user_token']);
+                return $request->session()->all();
                 return 'true';
             } else {
                 $request->session()->flush();
