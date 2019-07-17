@@ -36,9 +36,13 @@ class User extends Model
         return($user);
     }
 
+    public function name() {
+        return ucfirst($this->first_name) . ' ' . ucfirst($this->last_name);
+    }
+
     public static function authenticate($email, $password) {
         $curl = curl_init();
-
+        
         curl_setopt_array($curl, array(
           CURLOPT_URL => config('ssoauth.main.sso_api_url') . config('ssoauth.api.user/login'),
           CURLOPT_RETURNTRANSFER => true,
@@ -57,10 +61,10 @@ class User extends Model
 
         $output = curl_exec($curl);
         $output = json_decode($output, true);
-        if($output["status"] != "failure") {
+        if($output["status"] == "success") {
             return $output;
         } else {
-            return "false";
+            return User::errorOutput("Authentication failed!", [$email, $password], debug_backtrace());
         }
     }
 
@@ -83,14 +87,10 @@ class User extends Model
             ];
             session()->put('user_id', $sessionData["user_id"]);
             session()->put('user_token', $sessionData["user_token"]);
-            return $sessionData;
+            return User::successOutput($user);
         } else {
-            User::newUser($authenticated);
-            $sessionData = [
-                'user_id' => $authenticated['rows'][0]['id'],
-                'user_token' => $authenticated['rows'][0]['token']
-            ];
-            return $sessionData;
+            $newUser = User::newUser($authenticated);
+            return $newUser;
         }
     }
 
@@ -103,13 +103,11 @@ class User extends Model
         $user->email = $authenticated['rows'][0]['email'];
         $user->roles = json_encode($authenticated['rows'][0]['roles']);
         $user->permissions = json_encode($authenticated['rows'][0]['permissions']);
-
         $user->save();
+        return User::successOutput($user);
     }
 
-    public function verify () {
-        $token = $this->token;
-        $user_id = $this->user_id;
+    public static function verify ($token, $user_id) {
 
         $curl = curl_init();
 
@@ -131,11 +129,44 @@ class User extends Model
         ));
 
         $output = json_decode(curl_exec($curl), true);
-        if($output["status"] === "success") {
-            return "true";
-        } else {
-            return "false";
-        }
+        return $output;
 
+    }
+
+
+
+
+
+
+
+
+
+
+
+    public static function successOutput($data) {
+        $output = [
+            'rows' => [
+                $data
+            ],
+            'status' => 'success',
+            'metrics' => [
+                'resultCount' => 1,
+            ]
+        ];
+        return $output;
+    }
+
+    public static function errorOutput($error, $supplied_arguments, $debug) {
+        $output = [
+            'rows' => [],
+            'status' => 'failure',
+            'metrics' => [
+                'resultCount' => 0,
+                'error' => $error,
+                'error_locale' => $debug,
+                'supplied_arguments' => $supplied_arguments
+            ]
+        ];
+        return $output;
     }
 }

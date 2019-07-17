@@ -19,17 +19,19 @@ class SSOAuthCheck
     {
 
 
-        if($request->session()->has('user_id') && $request->session()->has('user_token')) {
-            $user = User::user();
-            if($user->verify() == "true") {
+        if($request->session()->has('user_id')) {
+            $token = $request->session()->get('user_token');
+            $user_id = $request->session()->get('user_id');
+            $verify = User::verify($token, $user_id);
+            if($verify['status'] == "success") {
                 return $next($request);
             } else {
                 $request->session()->flush();
-                return redirect('/login');
+                return redirect(config('ssoauth.main.login_route'));
             }
         } else {
             $request->session()->flush();
-            return redirect('/login');
+            return redirect(config('ssoauth.main.login_route'));
         }
 
 
