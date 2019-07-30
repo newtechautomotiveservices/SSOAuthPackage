@@ -1,5 +1,5 @@
 # SSO Authentication (Laravel 5 Package)
-CRM Authentication is a package to implement our SSO Authentication into **Laravel 5**.
+SSOAAuth is a package to implement our SSO Authentication into **Laravel 5**.
 This package works best if you are using a laravel project stripped of laravel user authentication ( How to do that is detailed below ).
 
 ## Installation
@@ -70,7 +70,7 @@ php artisan migrate
 
 ```php
 Route::group(['middleware' => ['ssoauth']], function () {
-	Route::get('/home', 'HomeController@index')->name('home');
+    Route::get('/home', 'HomeController@index')->name('home');
 });
 ```
 ### Models
