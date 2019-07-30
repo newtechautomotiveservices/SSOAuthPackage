@@ -1,5 +1,5 @@
 # SSO Authentication (Laravel 5 Package)
-SSOAAuth is a package to implement our SSO Authentication into **Laravel 5**.
+SSOAuth is a package to implement our SSO Authentication into **Laravel 5**.
 This package works best if you are using a laravel project stripped of laravel user authentication ( How to do that is detailed below ).
 
 ## Installation
