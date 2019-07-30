@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 use Session;
 
+use Illuminate\Http\Response;
+
 // use GuzzleHttp\Exception\GuzzleException;
 // use GuzzleHttp\Client;
 
@@ -15,158 +17,106 @@ class User extends Model
 {
     protected $table = 'sso_users';
 
+    protected $fillable = [
+        'first_name', 'last_name', 'avatar', 'email', 'known_logins', 'remote_token', 'store_number', 'guards'
+    ];
+
     protected $dates = [
         'created_at',
         'updated_at',
         'deleted_at',
     ];
 
-    protected $fillable = [
-        'user_id',
-        'first_name',
-        'last_name',
-        'email',
-        'roles',
-        'permissions'
+
+    protected $casts = [
+        'guards' => 'array'
     ];
 
-    public static function user() {
-        $user_id = Session::get("user_id");
-        $user = User::where('user_id', '=', $user_id)->first();
-        return($user);
+    public static function user() 
+    {
+        $user_id = session()->get("_user_id");
+        return User::find($user_id);
     }
 
-    public function name() {
-        return ucfirst($this->first_name) . ' ' . ucfirst($this->last_name);
-    }
-
-    public static function authenticate($email, $password) {
-        $curl = curl_init();
-        
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => config('ssoauth.main.sso_api_url') . config('ssoauth.api.user/login'),
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => "",
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 30,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => "POST",
-          CURLOPT_POSTFIELDS => "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"email\"\r\n\r\n" . $email . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"password\"\r\n\r\n" . $password . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--",
-          CURLOPT_HTTPHEADER => array(
-            "Postman-Token: ea1c5e83-e23e-463a-9832-7c9d86ca3b82",
-            "cache-control: no-cache",
-            "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
-          ),
-        ));
-
-        $output = curl_exec($curl);
-        $output = json_decode($output, true);
-        if($output["status"] == "success") {
-            return $output;
-        } else {
-            return User::errorOutput("Authentication failed!", [$email, $password], debug_backtrace());
-        }
-    }
-
-    public static function updateUser($authenticated) {
-        // dd($authenticated);
-        $user = User::where('user_id', '=', $authenticated['rows'][0]['id'])->first();
-        if($user) {
-            $user->user_id = $authenticated['rows'][0]['id'];
-            $user->store_number = $authenticated['rows'][0]['store_number'];
-            $user->first_name = $authenticated['rows'][0]['first_name'];
-            $user->last_name = $authenticated['rows'][0]['last_name'];
-            $user->email = $authenticated['rows'][0]['email'];
-            $user->roles = json_encode($authenticated['rows'][0]['roles']);
-            $user->permissions = json_encode($authenticated['rows'][0]['permissions']);
-            $user->save();
-
-            $sessionData = [
-                'user_id' => $authenticated['rows'][0]['id'],
-                'user_token' => $authenticated['rows'][0]['token']
-            ];
-            session()->put('user_id', $sessionData["user_id"]);
-            session()->put('user_token', $sessionData["user_token"]);
-            return User::successOutput($user);
-        } else {
-            $newUser = User::newUser($authenticated);
-            return $newUser;
-        }
-    }
-
-    public static function newUser($authenticated) {
-        $user = new User();
-        $user->user_id = $authenticated['rows'][0]['id'];
-        $user->store_number = $authenticated['rows'][0]['store_number'];
-        $user->first_name = $authenticated['rows'][0]['first_name'];
-        $user->last_name = $authenticated['rows'][0]['last_name'];
-        $user->email = $authenticated['rows'][0]['email'];
-        $user->roles = json_encode($authenticated['rows'][0]['roles']);
-        $user->permissions = json_encode($authenticated['rows'][0]['permissions']);
-        $user->save();
-        return User::successOutput($user);
-    }
-
-    public static function verify ($token, $user_id) {
-
+    public static function authenticate ($email, $password) {
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
           CURLOPT_PORT => "8000",
-          CURLOPT_URL => config('ssoauth.main.sso_api_url') . config('ssoauth.api.user/verify'),
+          CURLOPT_URL => "http://localhost:8000/api/ssoauth/authenticate",
           CURLOPT_RETURNTRANSFER => true,
           CURLOPT_ENCODING => "",
           CURLOPT_MAXREDIRS => 10,
           CURLOPT_TIMEOUT => 30,
           CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
           CURLOPT_CUSTOMREQUEST => "POST",
-          CURLOPT_POSTFIELDS => "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"user_id\"\r\n\r\n" . $user_id . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"token\"\r\n\r\n" . $token . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"project_id\"\r\n\r\n" . config('ssoauth.main.project_id') . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--",
+          CURLOPT_POSTFIELDS => "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"email\"\r\n\r\n" . $email . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"password\"\r\n\r\n" . $password . "\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"project_id\"\r\n\r\n2\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--",
           CURLOPT_HTTPHEADER => array(
-            "Postman-Token: ff373564-5a62-493a-a247-35506dd489d2",
+            "Authorization: Bearer a34e5206-0d5b-4250-a901-ddea650dcd0c",
+            "Postman-Token: e3c15764-c8a9-4f63-956e-46dd3b51cb9e",
             "cache-control: no-cache",
             "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
           ),
         ));
 
-        $output = json_decode(curl_exec($curl), true);
-        return $output;
+        $response = curl_exec($curl);
+        $formatted_response = json_decode(curl_exec($curl));
+        $err = curl_error($curl);
 
+        if($formatted_response->status == "success") {
+            $user = User::find($formatted_response->output->id);
+            if($user) {
+                $user->update(json_decode(curl_exec($curl), true)["output"]);
+            } else {
+                $user = User::create(json_decode(curl_exec($curl), true)["output"]);
+            }
+            curl_close($curl);
+            session()->put('_user_id', $formatted_response->output->id);
+            session()->put('_user_token', $formatted_response->output->remote_token);
+            return "true";
+        } else {
+            curl_close($curl);
+            session()->flush();
+            return "false";
+        }
     }
 
 
-
-
-
-
-
-
-
-
-
-    public static function successOutput($data) {
-        $output = [
-            'rows' => [
-                $data
-            ],
-            'status' => 'success',
-            'metrics' => [
-                'resultCount' => 1,
-            ]
-        ];
-        return $output;
+    /* ----------------- MUTATIONS ----------------- */
+    public function getActiveStoreAttribute() {
+        $active_store = $this->guards['stores'];
+        foreach ($active_store as $index => $active_store) {
+            if($active_store['store_number'] == $this->store_number) {
+                return $active_store;
+            }
+        }
+        return false;
     }
 
-    public static function errorOutput($error, $supplied_arguments, $debug) {
-        $output = [
-            'rows' => [],
-            'status' => 'failure',
-            'metrics' => [
-                'resultCount' => 0,
-                'error' => $error,
-                'error_locale' => $debug,
-                'supplied_arguments' => $supplied_arguments
-            ]
-        ];
-        return $output;
+    public function getNameAttribute($value)
+    {
+       return ucfirst($this->first_name) . ' ' . ucfirst($this->last_name);
+    }
+
+    public function getPermissionsAttribute($value) 
+    {
+        $permissions = $this->guards['permissions'];
+        return $permissions;
+    }
+
+    public function getRolesAttribute($value) 
+    {
+        $roles = $this->guards['roles'];
+        return $roles;
+    }
+
+    public function can($permission_name) 
+    {
+        foreach ($this->permissions as $index => $permission) {
+            if(strtolower($permission) == strtolower($permission_name)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

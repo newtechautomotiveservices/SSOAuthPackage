@@ -124,7 +124,7 @@
                          },
                          success: function(result){
                           console.log(result);
-                             if (result["status"] == "success") {
+                             if (result == "true") {
                                  window.location = "{!! config('ssoauth.main.home_route') !!}"
                              } else {
                                  invalidError.style.display = "block";

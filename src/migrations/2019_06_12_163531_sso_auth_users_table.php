@@ -9,14 +9,16 @@ class SSOAuthUsersTable extends Migration
     public function up()
     {
         Schema::create('sso_users', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('user_id');
-            $table->string('store_number');
+            $table->bigIncrements('id');
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('avatar');
             $table->string('email');
-            $table->string('roles');
-            $table->string('permissions');
+            $table->json('known_logins')->nullable();
+            $table->string('refresh_token')->nullable();
+            $table->string('remote_token')->nullable();
+            $table->string('store_number');
+            $table->json('guards');
             $table->timestamps();
         });
     }
