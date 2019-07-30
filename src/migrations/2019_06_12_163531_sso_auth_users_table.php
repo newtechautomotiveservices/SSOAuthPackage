@@ -15,7 +15,6 @@ class SSOAuthUsersTable extends Migration
             $table->string('avatar');
             $table->string('email');
             $table->json('known_logins')->nullable();
-            $table->string('refresh_token')->nullable();
             $table->string('remote_token')->nullable();
             $table->string('store_number');
             $table->json('guards');

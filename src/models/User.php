@@ -66,13 +66,15 @@ class User extends Model
         if($formatted_response->status == "success") {
             $user = User::find($formatted_response->output->id);
             if($user) {
+                // dd(json_decode(curl_exec($curl), true)["output"]);
                 $user->update(json_decode(curl_exec($curl), true)["output"]);
             } else {
                 $user = User::create(json_decode(curl_exec($curl), true)["output"]);
             }
             curl_close($curl);
-            session()->put('_user_id', $formatted_response->output->id);
-            session()->put('_user_token', $formatted_response->output->remote_token);
+
+            session()->put('_user_id', $user->id);
+            session()->put('_user_token', $user->remote_token);
             return "true";
         } else {
             curl_close($curl);
@@ -118,5 +120,18 @@ class User extends Model
             }
         }
         return false;
+    }
+
+    public static function verify ($token, $user_id) {
+        $user = User::find($user_id);
+        if($user) {
+            if($token == $user->remote_token) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
