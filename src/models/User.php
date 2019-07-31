@@ -27,11 +27,6 @@ class User extends Model
         'deleted_at',
     ];
 
-
-    protected $casts = [
-        'guards' => 'array'
-    ];
-
     public static function user() 
     {
         $user_id = session()->get("_user_id");
@@ -43,7 +38,7 @@ class User extends Model
 
         curl_setopt_array($curl, array(
           CURLOPT_PORT => "8000",
-          CURLOPT_URL => "http://localhost:8000/api/ssoauth/authenticate",
+          CURLOPT_URL => config('ssoauth.main.sso_url') . "/api/ssoauth/authenticate",
           CURLOPT_RETURNTRANSFER => true,
           CURLOPT_ENCODING => "",
           CURLOPT_MAXREDIRS => 10,
@@ -101,14 +96,14 @@ class User extends Model
     }
 
     public function getPermissionsAttribute($value) 
-    {
-        $permissions = $this->guards['permissions'];
+    {  
+        $permissions = json_decode($this->guards)->permissions;
         return $permissions;
     }
 
     public function getRolesAttribute($value) 
     {
-        $roles = $this->guards['roles'];
+        $roles = json_decode($this->guards)->roles;
         return $roles;
     }
 

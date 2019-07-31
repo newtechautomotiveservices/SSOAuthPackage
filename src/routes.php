@@ -15,6 +15,6 @@ Route::group(['middleware' => ['web']], function () {
 
 Route::prefix('api')->group(function () {
     Route::group(['middleware' => ['api']], function () {
-    	Route::post('/ssoauth/requestPassSession', 'Newtech\SSOAuth\SSOAuthController@passSessionPost');
+    	Route::post('/ssoauth/requestPassSession', 'Newtech\SSOAuth\SSOAuthController@passSessionPost')->name('api.passSession');
     });
 });
