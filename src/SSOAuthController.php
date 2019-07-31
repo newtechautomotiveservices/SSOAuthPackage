@@ -56,7 +56,6 @@ class SSOAuthController extends Controller
     }
 
     public function passSession (Request $request) {
-
         $user = User::find($request["user_id"]);
         $user->remote_token = $request["user_token"];
         $user->save();
