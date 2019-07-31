@@ -13,9 +13,8 @@ class SSOAuthController extends Controller
 {
     public function indexLogin() {
       $curl = curl_init();
-
+      // dd(route('api.passSession'));
       curl_setopt_array($curl, array(
-        CURLOPT_PORT => "8000",
         CURLOPT_URL => config("ssoauth.main.sso_url") . "/api/ssoauth/authenticate",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",
@@ -31,11 +30,12 @@ class SSOAuthController extends Controller
           "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
         ),
       ));
-
       $response = curl_exec($curl);
+
       $err = curl_error($curl);
 
       curl_close($curl);
+      // dd($response);
       return redirect($response);
     }
 
@@ -50,17 +50,22 @@ class SSOAuthController extends Controller
     }
 
     public function passSessionPost(Request $request) {
-        return URL::temporarySignedRoute(
-            'signed.pass_session', now()->addMinutes(30), ['user_id' => $request["user_id"], 'user_token' => $request["user_token"]]
-        );
+      // dd($request->all());
+      $user = User::find($request['id']);
+      if($user) {
+        $user->update($request->all());
+      } else {
+        $user = User::create($request->all());
+
+      }
+      return URL::temporarySignedRoute(
+          'signed.pass_session', now()->addMinutes(30), ['user_id' => $user->id, 'user_token' => $user->remote_token]
+      );
     }
 
     public function passSession (Request $request) {
-        $user = User::find($request["user_id"]);
-        $user->remote_token = $request["user_token"];
-        $user->save();
-        session()->put('_user_id', $request["user_id"]);
-        session()->put('_user_token', $request["user_token"]);
+        $request->session()->put('_user_id', $request["user_id"]);
+        $request->session()->put('_user_token', $request["user_token"]);
         return redirect(config('ssoauth.main.home_route'));
     }
 }
