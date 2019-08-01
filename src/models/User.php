@@ -37,7 +37,6 @@ class User extends Model
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-          CURLOPT_PORT => "8000",
           CURLOPT_URL => config('ssoauth.main.sso_url') . "/api/ssoauth/authenticate",
           CURLOPT_RETURNTRANSFER => true,
           CURLOPT_ENCODING => "",
@@ -57,7 +56,6 @@ class User extends Model
         $response = curl_exec($curl);
         $formatted_response = json_decode(curl_exec($curl));
         $err = curl_error($curl);
-
         if($formatted_response->status == "success") {
             $user = User::find($formatted_response->output->id);
             if($user) {
