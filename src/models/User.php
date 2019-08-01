@@ -18,7 +18,7 @@ class User extends Model
     protected $table = 'sso_users';
 
     protected $fillable = [
-        'first_name', 'last_name', 'avatar', 'email', 'known_logins', 'remote_token', 'store_number', 'guards'
+        'id', 'first_name', 'last_name', 'avatar', 'email', 'known_logins', 'remote_token', 'store_number', 'guards'
     ];
 
     protected $dates = [

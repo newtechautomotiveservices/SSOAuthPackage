@@ -70,16 +70,18 @@ class SSOAuthController extends Controller
 
     public function passSessionDev ($json) {
       $data = json_decode(base64_decode($json), true);
+      // dd($data);
         $user = User::find($data["id"]);
         if($user) {
-          $user->update($data);
-          session()->put('_user_id', $data["id"]);
-          session()->put('_user_token', $data["remote_token"]);
+          $user->remote_token = $data['remote_token'];
+          $user->save();
+          session()->put('_user_id', $user->id);
+          session()->put('_user_token', $user->remote_token);
           return redirect(config('ssoauth.main.home_route'));
         } else {
-          User::create($data);
-          session()->put('_user_id', $data["id"]);
-          session()->put('_user_token', $data["remote_token"]);
+          $userTMP = User::create($data);
+          session()->put('_user_id', $userTMP->id);
+          session()->put('_user_token', $userTMP->remote_token);
           return redirect(config('ssoauth.main.home_route'));
         }
     }
