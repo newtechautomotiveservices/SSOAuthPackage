@@ -17,33 +17,14 @@ class SSOAuthCheck
      */
     public function handle($request, Closure $next)
     {
-        if($request->session()->has('_user_id')) {
-            if($request->session()->has('requestCount')) {
-                $requestCount = $request->session()->get('requestCount');
-                if($requestCount >= config('ssoauth.main.refresh_interval')) {
-                    $token = $request->session()->get('_user_token');
-                    $user_id = $request->session()->get('_user_id');
-                    $verify = User::verify($token, $user_id);
-                    $requestCount = 0;
-                    $request->session()->put('requestCount', $requestCount);
-                    $request->session()->save();
-                    if($verify) {
-                        return $next($request);
-                    } else {
-                        $request->session()->flush();
-                        return redirect(config('ssoauth.main.login_route'));
-                    }
-                } else {
-                    $requestCount = $requestCount + 1;
-                    $request->session()->put('requestCount', $requestCount);
-                    $request->session()->save();
-                    return $next($request);
-                }
-            } else {
-                $requestCount = 0;
-                $request->session()->put('requestCount', $requestCount);
-                $request->session()->save();
+        $token = $request->session()->get('_user_token');
+        $user_id = $request->session()->get('_user_id');
+        $verify = User::verify($token, $user_id);
+        if($verify) {
+            if(User::find($user_id)->can("access site")) {
                 return $next($request);
+            } else {
+                abort(403, 'You dont have access to this site.');
             }
 
         } else {
