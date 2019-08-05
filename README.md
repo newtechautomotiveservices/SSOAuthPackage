@@ -38,7 +38,7 @@ composer dump-autoload
 php artisan vendor:publish
 ```
 
-4) Open your `config/crm_authentication/main.php` and configure the package:
+4) Open your `config/ssoauth/main.php` and configure the package:
 
 ```php
 return [
