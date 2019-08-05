@@ -42,12 +42,11 @@ php artisan vendor:publish
 
 ```php
 return [
-        'sso_api_url' => 'http://localhost:8000/api', // The api url for SSO.
+        'sso_api_url' => 'http://example.com', // The base url for SSO.
         'login_route' => '/login', // Route where you want the login, the route is created by the package. (EX :: "/login")
         'logout_route' => '/logout', // Route where you want the logout, the route is created by the package. (EX :: "/logout")
-        'home_route' => '/', // Route to your home page.
+        'home_route' => '/dashboard', // Route to your home page.
         'product_id' => '1', // You can grab this from the SSO website.
-        'refresh_interval' => 1 // How often the pages check authorization (per request)
 ];
 ```
 
@@ -73,6 +72,16 @@ Route::group(['middleware' => ['ssoauth']], function () {
     Route::get('/home', 'HomeController@index')->name('home');
 });
 ```
+
+7) Any routes that you want behind specific permissions have the following setup:
+```php
+Route::group(['middleware' => ['ssoauth']], function () {
+    Route::group(['middleware' => ['ssoroutecheck']], function () {
+        Route::get('/home', 'HomeController@index')->name('home');
+    });
+});
+```
+Then on the SSO side you must have a permission named 'access home'.
 ### Models
 
 #### User

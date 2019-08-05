@@ -19,7 +19,7 @@ class SSORouteCheck
     {
         $user = User::user();
         if($user) {
-            if($user->can("route::view " . $request->route()->getName())) {
+            if($user->can("access " . $request->route()->getName())) {
                 return $next($request);
             } else {
                 abort(403, 'You dont have access to this page.');
