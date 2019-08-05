@@ -23,6 +23,7 @@ class SSOAuthServiceProvider extends ServiceProvider
             __DIR__ . '/migrations' => $this->app->databasePath() . '/migrations'
         ], 'migrations');
         $this->app['router']->aliasMiddleware('ssoauth' , \Newtech\SSOAuth\Middleware\SSOAuthCheck::class);
+        $this->app['router']->aliasMiddleware('ssoroutecheck' , \Newtech\SSOAuth\Middleware\SSORouteCheck::class);
     }
 
     /**
