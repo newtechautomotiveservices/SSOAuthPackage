@@ -27,7 +27,7 @@ class User extends Model
         'deleted_at',
     ];
 
-    public static function user() 
+    public static function user()
     {
         $user_id = session()->get("_user_id");
         return User::find($user_id);
@@ -59,7 +59,6 @@ class User extends Model
         if($formatted_response->status == "success") {
             $user = User::find($formatted_response->output->id);
             if($user) {
-                // dd(json_decode(curl_exec($curl), true)["output"]);
                 $user->update(json_decode(curl_exec($curl), true)["output"]);
             } else {
                 $user = User::create(json_decode(curl_exec($curl), true)["output"]);
@@ -93,19 +92,19 @@ class User extends Model
        return ucfirst($this->first_name) . ' ' . ucfirst($this->last_name);
     }
 
-    public function getPermissionsAttribute($value) 
-    {  
+    public function getPermissionsAttribute($value)
+    {
         $permissions = json_decode($this->guards)->permissions;
         return $permissions;
     }
 
-    public function getRolesAttribute($value) 
+    public function getRolesAttribute($value)
     {
         $roles = json_decode($this->guards)->roles;
         return $roles;
     }
 
-    public function can($permission_name) 
+    public function can($permission_name)
     {
         foreach ($this->permissions as $index => $permission) {
             if(strtolower($permission) == strtolower($permission_name)) {

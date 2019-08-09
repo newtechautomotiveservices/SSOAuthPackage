@@ -19,6 +19,7 @@ class SSOAuthController extends Controller
       } else {
         $session_url = route('api.passSession');
       }
+
       curl_setopt_array($curl, array(
         CURLOPT_URL => config("ssoauth.main.sso_url") . "/api/ssoauth/authenticate",
         CURLOPT_RETURNTRANSFER => true,
@@ -34,7 +35,7 @@ class SSOAuthController extends Controller
           "cache-control: no-cache",
           "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
         ),
-      )); 
+      ));
 
       $response = curl_exec($curl);
       $err = curl_error($curl);
@@ -55,26 +56,30 @@ class SSOAuthController extends Controller
 
     public function passSessionPost(Request $request) {
         return URL::temporarySignedRoute(
-            'signed.pass_session', now()->addMinutes(30), ['user_id' => $request["user_id"], 'user_token' => $request["user_token"]]
+            'signed.pass_session', now()->addMinutes(30), ['user' => $request['user']]
         );
     }
 
     public function passSession (Request $request) {
-        $user = User::find($request["user_id"]);
-        $user->remote_token = $request["user_token"];
-        $user->save();
-        session()->put('_user_id', $request["user_id"]);
-        session()->put('_user_token', $request["user_token"]);
+        $user = User::find($request["user"]["id"]);
+        if($user) {
+            $user->update($request['user']);
+        } else {
+            $user = User::create($request['user']);
+            session()->put('_user_id', $user->id);
+            session()->put('_user_token', $user->remote_token);
+            return redirect(config('ssoauth.main.home_route'));
+        }
+        session()->put('_user_id', $user->id);
+        session()->put('_user_token', $user->remote_token);
         return redirect(config('ssoauth.main.home_route'));
     }
 
     public function passSessionDev ($json) {
       $data = json_decode(base64_decode($json), true);
-      // dd($data);
         $user = User::find($data["id"]);
         if($user) {
-          $user->remote_token = $data['remote_token'];
-          $user->save();
+            $user->update($data);
           session()->put('_user_id', $user->id);
           session()->put('_user_token', $user->remote_token);
           return redirect(config('ssoauth.main.home_route'));
